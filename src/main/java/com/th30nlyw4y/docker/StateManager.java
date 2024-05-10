@@ -5,14 +5,12 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Event;
 import com.github.dockerjava.api.model.EventType;
-import com.th30nlyw4y.utils.DockerCmdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,11 +21,11 @@ public class StateManager extends SwingWorker<Integer, Integer> {
     private final Logger log = LoggerFactory.getLogger(StateManager.class);
     private final ReentrantLock stateLock = new ReentrantLock();
 
-    public StateManager(JTable cTable) {
+    public StateManager(DockerClient dockerClient, JTable cTable) {
         super();
         log.info("Initializing State Manager");
         this.cTable = cTable;
-        this.dockerClient = new DockerConnection().getClient();
+        this.dockerClient = dockerClient;
         initState();
     }
 
@@ -52,34 +50,6 @@ public class StateManager extends SwingWorker<Integer, Integer> {
             .withIdFilter(Collections.singletonList(containerId))
             .exec()
             .getFirst();
-    }
-
-    public void executeDockerCmd(DockerCmdType t) {
-        // TODO change column names to enum
-        int col = cTable.getColumn("Id").getModelIndex();
-        int row = cTable.getSelectedRow();
-        if (row == -1) return;
-        String selectedContainerId = (String) cTable.getModel().getValueAt(row, col);
-        try {
-            switch (t) {
-                case START_CMD -> {
-                    log.info("Executing start command for container {}", selectedContainerId);
-                    dockerClient.startContainerCmd(selectedContainerId).exec();
-                }
-                case STOP_CMD -> {
-                    log.info("Executing stop command for container {}", selectedContainerId);
-                    dockerClient.stopContainerCmd(selectedContainerId).exec();
-                }
-                case LOGS_CMD -> {
-                    log.info("Executing logs command for container {}", selectedContainerId);
-                    LogStreamer ls = new LogStreamer(selectedContainerId);
-                    ls.execute();
-                }
-                default -> log.warn("Unknown command: {}", t);
-            }
-        } catch (Exception e) {
-            log.error("Failed to execute Docker command: {}", e.getMessage());
-        }
     }
 
     /*
@@ -123,12 +93,6 @@ public class StateManager extends SwingWorker<Integer, Integer> {
                 }).awaitCompletion();
         } catch (InterruptedException intExc) {
             log.warn("State Manager was interrupted, shutting down");
-        } finally {
-            try {
-                dockerClient.close();
-            } catch (IOException IOExc) {
-                log.error("Failed to close docker connection: {}", IOExc.getMessage());
-            }
         }
         return 0;
     }

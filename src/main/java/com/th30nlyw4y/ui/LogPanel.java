@@ -3,17 +3,21 @@ package com.th30nlyw4y.ui;
 import javax.swing.*;
 
 public class LogPanel extends JScrollPane {
-    private JTextArea logPanel;
+    private JTextArea textArea;
 
     public LogPanel() {
         super();
         initLogPanel();
-        setViewportView(logPanel);
+        setViewportView(textArea);
         setVisible(false);
     }
 
     private void initLogPanel() {
-        logPanel = new JTextArea();
-        logPanel.setEditable(false);
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+    }
+
+    public void appendLog(String text) {
+        textArea.append(text + "\n");
     }
 }

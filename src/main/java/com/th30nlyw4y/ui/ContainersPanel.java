@@ -5,23 +5,30 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 public class ContainersPanel extends JScrollPane {
-    private JTable containersTable;
-    private TableModel containersTableModel;
+    private JTable cTable;
+    private TableModel cTableModel;
 
     public ContainersPanel(String[] columns) {
         super();
         initTable(columns);
-        setViewportView(containersTable);
+        setViewportView(cTable);
     }
 
     private void initTable(String[] columns) {
-        containersTableModel = new DefaultTableModel();
-        ((DefaultTableModel) containersTableModel).setColumnIdentifiers(columns);
-        containersTable = new JTable();
-        containersTable.setModel(containersTableModel);
+        cTableModel = new DefaultTableModel();
+        ((DefaultTableModel) cTableModel).setColumnIdentifiers(columns);
+        cTable = new JTable();
+        cTable.setModel(cTableModel);
     }
 
     public JTable getTable() {
-        return containersTable;
+        return cTable;
+    }
+
+    public String getSelectedContainerId() {
+        int col = cTable.getColumn("Id").getModelIndex();
+        int row = cTable.getSelectedRow();
+        if (row == -1) return null;
+        return (String) cTable.getModel().getValueAt(row, col);
     }
 }

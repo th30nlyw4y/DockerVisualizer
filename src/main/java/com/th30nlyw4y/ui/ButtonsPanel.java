@@ -1,15 +1,14 @@
 package com.th30nlyw4y.ui;
 
-
 import com.th30nlyw4y.utils.ButtonType;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class ButtonsPanel extends JPanel {
-    private final JButton startButton;
-    private final JButton stopButton;
-    private final JButton logsButton;
+    private JButton startButton;
+    private JButton stopButton;
+    private JButton logsButton;
 
     public ButtonsPanel() {
         super();
