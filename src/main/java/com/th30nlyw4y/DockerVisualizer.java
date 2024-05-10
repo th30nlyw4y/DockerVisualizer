@@ -35,7 +35,9 @@ public class DockerVisualizer extends JFrame {
         containersPanel = new ContainersPanel(PARAMS_TO_SHOW);
         logPanel = new LogPanel();
         buttonsPanel = new ButtonsPanel();
-        initButtonListeners();
+
+        // Set up action listeners
+        initActionListeners();
 
         // Init state manager
         // Also populates the table with initial values
@@ -56,7 +58,11 @@ public class DockerVisualizer extends JFrame {
         setLayout(new BorderLayout());
     }
 
-    private void initButtonListeners() {
+    private void initActionListeners() {
+        // Table actions
+        containersPanel.getTable().getSelectionModel()
+            .addListSelectionListener(e -> tableSelectionChanged());
+        // Buttons actions
         buttonsPanel.getButton(ButtonType.START_BUTTON)
             .addActionListener(e -> startButtonHandler());
         buttonsPanel.getButton(ButtonType.STOP_BUTTON)
@@ -66,17 +72,14 @@ public class DockerVisualizer extends JFrame {
     }
 
     private void startButtonHandler() {
-        DockerVisualizer.log.info("Handling Start button event");
+        DockerVisualizer.log.debug("Handling Start button event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
-        if (selectedContainerId == null) return;
         dockerClient.startContainerCmd(selectedContainerId).exec();
     }
 
     private void stopButtonHandler() {
-        DockerVisualizer.log.info("Handling Stop button event");
+        DockerVisualizer.log.debug("Handling Stop button event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
-        if (selectedContainerId == null) return;
-        if (!stateManager.isRunning(selectedContainerId)) return;
         if (logStreamer != null && logStreamer.isCurrentlyStreamed(selectedContainerId)) {
             DockerVisualizer.log.info(
                 "Container {} scheduled for stop. Cancelling log streaming",
@@ -90,15 +93,29 @@ public class DockerVisualizer extends JFrame {
     }
 
     private void logsButtonHandler() {
-        DockerVisualizer.log.info("Handling Logs button event");
+        DockerVisualizer.log.debug("Handling Logs button event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
-        // Don't show logs for not running container
-        if (!stateManager.isRunning(selectedContainerId)) return;
         if (logStreamer != null) {
             logStreamer.cancel(true);
         }
         logStreamer = new LogStreamer(dockerClient, logPanel, selectedContainerId);
         logStreamer.execute();
+    }
+
+    private void tableSelectionChanged() {
+        DockerVisualizer.log.info("Handling Table selection changed event");
+        String selectedContainerId = containersPanel.getSelectedContainerId();
+        if (selectedContainerId == null) {
+            buttonsPanel.setDisabled(ButtonType.START_BUTTON, ButtonType.STOP_BUTTON, ButtonType.LOGS_BUTTON);
+        } else {
+            if (stateManager.isRunning(selectedContainerId)) {
+                buttonsPanel.setEnabled(ButtonType.STOP_BUTTON, ButtonType.LOGS_BUTTON);
+                buttonsPanel.setDisabled(ButtonType.START_BUTTON);
+            } else {
+                buttonsPanel.setEnabled(ButtonType.START_BUTTON);
+                buttonsPanel.setDisabled(ButtonType.STOP_BUTTON, ButtonType.LOGS_BUTTON);
+            }
+        }
     }
 
     public void start() {

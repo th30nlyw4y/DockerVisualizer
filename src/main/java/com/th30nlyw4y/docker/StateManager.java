@@ -105,7 +105,7 @@ public class StateManager extends SwingWorker<Integer, Integer> {
                                 log.info("Container '{}' removed", containerImg);
                                 state.remove(containerId);
                         }
-                        // This is a dummy publish, since we actually redraw the table every time
+                        // This is a dummy publish, since we actually rebuild the table every time
                         // using shared state
                         publish(1);
                     }
@@ -120,9 +120,7 @@ public class StateManager extends SwingWorker<Integer, Integer> {
     protected void process(List<Integer> chunks) {
         log.info("Updating table model");
         TableModel tModel = cTable.getModel();
-        while (tModel.getRowCount() > 0) {
-            ((DefaultTableModel) tModel).removeRow(0);
-        }
+        ((DefaultTableModel) tModel).setRowCount(0);
         // We need this lock here, because SwingWorker modifies `state` in the background thread,
         // which causes iterator to throw exceptions
         stateLock.lock();

@@ -8,6 +8,8 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import org.apache.commons.lang3.NotImplementedException;
 
+import java.time.Duration;
+
 public class DockerConnection {
     private DockerClient client;
     private final String DEFAULT_LINUX_DOCKER_HOST = "unix:///var/run/docker.sock";
@@ -42,6 +44,7 @@ public class DockerConnection {
             .build();
         DockerHttpClient dockerHttpClient = new ApacheDockerHttpClient.Builder()
             .dockerHost(dockerCfg.getDockerHost())
+            .connectionTimeout(Duration.ZERO)
             .build();
         client = DockerClientImpl.getInstance(dockerCfg, dockerHttpClient);
     }

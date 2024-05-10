@@ -14,8 +14,11 @@ public class ButtonsPanel extends JPanel {
         super();
 
         startButton = new JButton("Start");
+        startButton.setEnabled(false);
         stopButton = new JButton("Stop");
+        stopButton.setEnabled(false);
         logsButton = new JButton("Logs");
+        logsButton.setEnabled(false);
 
         setLayout(new GridLayout(1, 3));
         add(startButton);
@@ -29,5 +32,17 @@ public class ButtonsPanel extends JPanel {
             case STOP_BUTTON -> stopButton;
             case LOGS_BUTTON -> logsButton;
         };
+    }
+
+    public void setDisabled(ButtonType... buttons) {
+        for (ButtonType t : buttons) {
+            getButton(t).setEnabled(false);
+        }
+    }
+
+    public void setEnabled(ButtonType... buttons) {
+        for (ButtonType t : buttons) {
+            getButton(t).setEnabled(true);
+        }
     }
 }
