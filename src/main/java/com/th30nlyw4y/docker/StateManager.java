@@ -21,6 +21,21 @@ public class StateManager extends SwingWorker<Integer, Integer> {
     private final Logger log = LoggerFactory.getLogger(StateManager.class);
     private final ReentrantLock stateLock = new ReentrantLock();
 
+    public enum ContainerState {
+        CREATED("created"),
+        RESTARTING("restarting"),
+        RUNNING("running"),
+        PAUSED("paused"),
+        EXITED("exited"),
+        DEAD("dead");
+
+        private final String value;
+
+        ContainerState(String value) {
+            this.value = value;
+        }
+    }
+
     public StateManager(DockerClient dockerClient, JTable cTable) {
         super();
         log.info("Initializing State Manager");
@@ -50,6 +65,10 @@ public class StateManager extends SwingWorker<Integer, Integer> {
             .withIdFilter(Collections.singletonList(containerId))
             .exec()
             .getFirst();
+    }
+
+    public Boolean isRunning(String containerId) {
+        return state.get(containerId).getState().equals(ContainerState.RUNNING.value);
     }
 
     /*

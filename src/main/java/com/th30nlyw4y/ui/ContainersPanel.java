@@ -19,6 +19,7 @@ public class ContainersPanel extends JScrollPane {
         ((DefaultTableModel) cTableModel).setColumnIdentifiers(columns);
         cTable = new JTable();
         cTable.setModel(cTableModel);
+        cTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public JTable getTable() {

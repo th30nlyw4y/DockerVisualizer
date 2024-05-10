@@ -21,7 +21,7 @@ public class DockerVisualizer extends JFrame {
     private ContainersPanel containersPanel;
     private LogPanel logPanel;
     private ButtonsPanel buttonsPanel;
-    private final String[] PARAMS_TO_SHOW = {"Id", "Image", "Status"};
+    private final String[] PARAMS_TO_SHOW = {"Id", "Image", "State"};
     static final Logger log = LoggerFactory.getLogger(DockerVisualizer.class);
 
     public DockerVisualizer() {
@@ -50,7 +50,7 @@ public class DockerVisualizer extends JFrame {
     private void initFrame() {
         // Frame settings
         setTitle("Docker Visualizer");
-        setSize(400, 300);
+        setSize(1280, 720);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -76,6 +76,7 @@ public class DockerVisualizer extends JFrame {
         DockerVisualizer.log.info("Handling Stop button event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
         if (selectedContainerId == null) return;
+        if (!stateManager.isRunning(selectedContainerId)) return;
         if (logStreamer != null && logStreamer.isCurrentlyStreamed(selectedContainerId)) {
             DockerVisualizer.log.info(
                 "Container {} scheduled for stop. Cancelling log streaming",
@@ -90,14 +91,14 @@ public class DockerVisualizer extends JFrame {
 
     private void logsButtonHandler() {
         DockerVisualizer.log.info("Handling Logs button event");
+        String selectedContainerId = containersPanel.getSelectedContainerId();
+        // Don't show logs for not running container
+        if (!stateManager.isRunning(selectedContainerId)) return;
         if (logStreamer != null) {
             logStreamer.cancel(true);
         }
-        String selectedContainerId = containersPanel.getSelectedContainerId();
         logStreamer = new LogStreamer(dockerClient, logPanel, selectedContainerId);
         logStreamer.execute();
-        logPanel.setVisible(true);
-        validate();
     }
 
     public void start() {
