@@ -5,11 +5,6 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Event;
 import com.github.dockerjava.api.model.EventType;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import com.github.dockerjava.transport.DockerHttpClient;
 import com.th30nlyw4y.utils.DockerCmdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +13,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,24 +25,10 @@ public class StateManager extends SwingWorker<Integer, Integer> {
 
     public StateManager(JTable cTable) {
         super();
-
-        log.info("Initializing state manager");
+        log.info("Initializing State Manager");
         this.cTable = cTable;
-        initDockerClient();
+        this.dockerClient = new DockerConnection().getClient();
         initState();
-    }
-
-    private void initDockerClient() {
-        log.info("Initializing Docker client");
-        DockerClientConfig cfg = DefaultDockerClientConfig.createDefaultConfigBuilder()
-            .withDockerHost("unix:///var/run/docker.sock")
-            .build();
-        DockerHttpClient http = new ApacheDockerHttpClient.Builder()
-            .dockerHost(cfg.getDockerHost())
-            .connectionTimeout(Duration.ofSeconds(10))
-            .responseTimeout(Duration.ofSeconds(10))
-            .build();
-        dockerClient = DockerClientImpl.getInstance(cfg, http);
     }
 
     private void initState() {
@@ -92,7 +72,7 @@ public class StateManager extends SwingWorker<Integer, Integer> {
                 }
                 case LOGS_CMD -> {
                     log.info("Executing logs command for container {}", selectedContainerId);
-                    LogStreamer ls = new LogStreamer(dockerClient, selectedContainerId);
+                    LogStreamer ls = new LogStreamer(selectedContainerId);
                     ls.execute();
                 }
                 default -> log.warn("Unknown command: {}", t);
@@ -142,6 +122,8 @@ public class StateManager extends SwingWorker<Integer, Integer> {
                     }
                 }).awaitCompletion();
         } catch (InterruptedException intExc) {
+            log.warn("State Manager was interrupted, shutting down");
+        } finally {
             try {
                 dockerClient.close();
             } catch (IOException IOExc) {

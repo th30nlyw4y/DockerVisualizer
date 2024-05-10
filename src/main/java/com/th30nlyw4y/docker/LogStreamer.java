@@ -1,6 +1,5 @@
 package com.th30nlyw4y.docker;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Frame;
 import org.slf4j.Logger;
@@ -11,16 +10,16 @@ import java.awt.*;
 import java.util.List;
 
 public class LogStreamer extends SwingWorker<Integer, String> {
-    private final String containerId;
-    private final DockerClient dockerClient;
-    private final JFrame logWindow;
-    private final JTextArea logArea;
-    private final Logger log = LoggerFactory.getLogger(LogStreamer.class);
+    private String containerId;
+    private DockerConnection dockerConn;
+    private JFrame logWindow;
+    private JTextArea logArea;
+    private Logger log = LoggerFactory.getLogger(LogStreamer.class);
 
-    public LogStreamer(DockerClient dockerClient, String containerId) {
+    public LogStreamer(String containerId) {
         super();
 
-        this.dockerClient = dockerClient;
+        this.dockerConn = new DockerConnection();
         this.containerId = containerId;
 
         logWindow = new JFrame(String.format("%s logs", containerId));
@@ -43,7 +42,7 @@ public class LogStreamer extends SwingWorker<Integer, String> {
     protected Integer doInBackground() throws Exception {
         log.info("Starting log streaming for container {}", containerId);
         try {
-            dockerClient.logContainerCmd(containerId)
+            dockerConn.getClient().logContainerCmd(containerId)
                 .withStdOut(true)
                 .withStdErr(true)
                 .withFollowStream(true)
@@ -56,6 +55,8 @@ public class LogStreamer extends SwingWorker<Integer, String> {
                 }).awaitCompletion();
         } catch (Exception e) {
             log.warn("Exception occurred while streaming logs: {}", e.getMessage());
+        } finally {
+            dockerConn.getClient().close();
         }
         return 0;
     }

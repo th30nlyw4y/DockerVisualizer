@@ -2,7 +2,8 @@ package com.th30nlyw4y;
 
 import com.th30nlyw4y.docker.StateManager;
 import com.th30nlyw4y.ui.ButtonsPanel;
-import com.th30nlyw4y.ui.ContainersTable;
+import com.th30nlyw4y.ui.ContainersPanel;
+import com.th30nlyw4y.ui.LogPanel;
 import com.th30nlyw4y.utils.ButtonType;
 import com.th30nlyw4y.utils.DockerCmdType;
 
@@ -11,26 +12,28 @@ import java.awt.*;
 
 public class DockerVisualizer extends JFrame {
     private final StateManager stateManager;
-    private final ContainersTable containersTable;
+    private final ContainersPanel containersPanel;
+    private final LogPanel logPanel;
     private final ButtonsPanel buttonsPanel;
-    private final String[] TABLE_COLUMNS = {"Id", "Image", "Status"};
+    private final String[] PARAMS_TO_SHOW = {"Id", "Image", "Status"};
 
     public DockerVisualizer() {
         super();
         initFrame();
 
         // Prepare UI components
-        containersTable = new ContainersTable(TABLE_COLUMNS);
-        JScrollPane containersTableScroll = new JScrollPane(containersTable);
+        containersPanel = new ContainersPanel(PARAMS_TO_SHOW);
+        logPanel = new LogPanel();
         buttonsPanel = new ButtonsPanel();
         initButtonListeners();
 
         // Init state manager
-        // Also populates the table with initial state values
-        stateManager = new StateManager(containersTable);
+        // Also populates the table with initial values
+        stateManager = new StateManager(containersPanel.getTable());
 
         // Put everything together
-        add(containersTableScroll, BorderLayout.CENTER);
+        add(containersPanel, BorderLayout.CENTER);
+        add(logPanel, BorderLayout.EAST);
         add(buttonsPanel, BorderLayout.SOUTH);
     }
 
