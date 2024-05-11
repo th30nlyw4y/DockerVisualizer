@@ -1,16 +1,15 @@
 package com.th30nlyw4y.ui;
-
-import com.th30nlyw4y.model.ButtonType;
+import com.th30nlyw4y.model.ControlButtonType;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class ButtonsPanel extends JPanel {
+public class ControlButtonsPanel extends JPanel {
     private JButton startButton;
     private JButton stopButton;
     private JButton logsButton;
 
-    public ButtonsPanel() {
+    public ControlButtonsPanel() {
         super();
 
         startButton = new JButton("Start");
@@ -26,22 +25,22 @@ public class ButtonsPanel extends JPanel {
         add(logsButton);
     }
 
-    public JButton getButton(ButtonType t) {
+    public JButton getButton(ControlButtonType t) {
         return switch (t) {
-            case START_BUTTON -> startButton;
-            case STOP_BUTTON -> stopButton;
-            case LOGS_BUTTON -> logsButton;
+            case START -> startButton;
+            case STOP -> stopButton;
+            case LOGS -> logsButton;
         };
     }
 
-    public void setDisabled(ButtonType... buttons) {
-        for (ButtonType t : buttons) {
+    public void setDisabled(ControlButtonType... buttons) {
+        for (ControlButtonType t : buttons) {
             getButton(t).setEnabled(false);
         }
     }
 
-    public void setEnabled(ButtonType... buttons) {
-        for (ButtonType t : buttons) {
+    public void setEnabled(ControlButtonType... buttons) {
+        for (ControlButtonType t : buttons) {
             getButton(t).setEnabled(true);
         }
     }

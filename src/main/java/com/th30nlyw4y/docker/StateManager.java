@@ -17,15 +17,17 @@ import java.util.*;
 
 public class StateManager extends SwingWorker<Object, StatusUpdate> {
     private DockerClient dockerClient;
-    private JTable cTable;
     private ContainersTableModel cTableModel;
     private final Logger log = LoggerFactory.getLogger(StateManager.class);
 
-    public StateManager(DockerClient dockerClient, JTable cTable) {
+    public StateManager(ContainersTableModel cTableModel) {
+        this(new DockerConnection().getClient(), cTableModel);
+    }
+
+    public StateManager(DockerClient dockerClient, ContainersTableModel cTableModel) {
         super();
         log.info("Initializing State Manager");
-        this.cTable = cTable;
-        this.cTableModel = (ContainersTableModel) cTable.getModel();
+        this.cTableModel = cTableModel;
         this.dockerClient = dockerClient;
         initState();
     }
@@ -46,12 +48,6 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
             .withIdFilter(Collections.singletonList(containerId))
             .exec()
             .getFirst();
-    }
-
-    public Boolean isRunning(String containerId) {
-        return cTableModel.getContainerById(containerId)
-            .getState()
-            .equals(ContainerState.RUNNING.value());
     }
 
     /*
