@@ -29,6 +29,6 @@ public class ContainersPanel extends JScrollPane {
         int col = cTable.getColumn("Id").getModelIndex();
         int row = cTable.getSelectedRow();
         if (row == -1) return null;
-        return (String) cTable.getModel().getValueAt(row, col);
+        return (String) cTableModel.getValueAt(row, col);
     }
 }

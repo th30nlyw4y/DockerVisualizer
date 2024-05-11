@@ -53,7 +53,6 @@ public class LogStreamer extends SwingWorker<Integer, String> {
         for (String s : chunks) {
             logPanel.appendLog(s);
         }
-        logPanel.setVisible(true);
-        logPanel.getParent().validate();
+        logPanel.setVisible();
     }
 }

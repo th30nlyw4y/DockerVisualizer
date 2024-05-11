@@ -69,6 +69,7 @@ public class DockerVisualizer extends JFrame {
             .addActionListener(e -> stopButtonHandler());
         buttonsPanel.getButton(ButtonType.LOGS_BUTTON)
             .addActionListener(e -> logsButtonHandler());
+
     }
 
     private void startButtonHandler() {
@@ -86,8 +87,7 @@ public class DockerVisualizer extends JFrame {
                 selectedContainerId
             );
             logStreamer.cancel(true);
-            logPanel.setVisible(false);
-            validate();
+            logPanel.setInvisible();
         }
         dockerClient.stopContainerCmd(selectedContainerId).exec();
     }
@@ -99,6 +99,7 @@ public class DockerVisualizer extends JFrame {
             logStreamer.cancel(true);
         }
         logStreamer = new LogStreamer(dockerClient, logPanel, selectedContainerId);
+        logPanel.clear();
         logStreamer.execute();
     }
 
