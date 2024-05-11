@@ -21,6 +21,7 @@ public class LogPanel extends JPanel {
         // Create panel with log area
         logArea = new JTextArea();
         logArea.setEditable(false);
+        logArea.setColumns(40);
         logAreaPanel = new JScrollPane(logArea);
 
         // Put all components to the log panel
