@@ -7,7 +7,8 @@ import com.th30nlyw4y.docker.StateManager;
 import com.th30nlyw4y.ui.ButtonsPanel;
 import com.th30nlyw4y.ui.ContainersPanel;
 import com.th30nlyw4y.ui.LogPanel;
-import com.th30nlyw4y.utils.ButtonType;
+import com.th30nlyw4y.model.ButtonType;
+import com.th30nlyw4y.model.ContainerProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,6 @@ public class DockerVisualizer extends JFrame {
     private ContainersPanel containersPanel;
     private LogPanel logPanel;
     private ButtonsPanel buttonsPanel;
-    private final String[] PARAMS_TO_SHOW = {"Id", "Image", "State"};
     static final Logger log = LoggerFactory.getLogger(DockerVisualizer.class);
 
     public DockerVisualizer() {
@@ -32,7 +32,7 @@ public class DockerVisualizer extends JFrame {
         dockerClient = new DockerConnection().getClient();
 
         // Prepare UI components
-        containersPanel = new ContainersPanel(PARAMS_TO_SHOW);
+        containersPanel = new ContainersPanel(ContainerProperty.Image, ContainerProperty.State);
         logPanel = new LogPanel();
         buttonsPanel = new ButtonsPanel();
 

@@ -1,6 +1,6 @@
 package com.th30nlyw4y.ui;
 
-import com.th30nlyw4y.utils.ButtonType;
+import com.th30nlyw4y.model.ButtonType;
 
 import javax.swing.*;
 import java.awt.*;

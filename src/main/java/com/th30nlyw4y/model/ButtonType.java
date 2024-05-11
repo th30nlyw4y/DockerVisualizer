@@ -1,4 +1,4 @@
-package com.th30nlyw4y.utils;
+package com.th30nlyw4y.model;
 
 public enum ButtonType {
     START_BUTTON,

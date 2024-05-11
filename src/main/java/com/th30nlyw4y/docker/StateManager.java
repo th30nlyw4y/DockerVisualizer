@@ -5,41 +5,27 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Event;
 import com.github.dockerjava.api.model.EventType;
+import com.th30nlyw4y.model.StatusUpdate;
+import com.th30nlyw4y.model.StatusUpdateType;
+import com.th30nlyw4y.ui.ContainersTableModel;
+import com.th30nlyw4y.model.ContainerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 
-public class StateManager extends SwingWorker<Integer, Integer> {
+public class StateManager extends SwingWorker<Object, StatusUpdate> {
     private DockerClient dockerClient;
     private JTable cTable;
-    private Map<String, Container> state;
+    private ContainersTableModel cTableModel;
     private final Logger log = LoggerFactory.getLogger(StateManager.class);
-    private final ReentrantLock stateLock = new ReentrantLock();
-
-    public enum ContainerState {
-        CREATED("created"),
-        RESTARTING("restarting"),
-        RUNNING("running"),
-        PAUSED("paused"),
-        EXITED("exited"),
-        DEAD("dead");
-
-        private final String value;
-
-        ContainerState(String value) {
-            this.value = value;
-        }
-    }
 
     public StateManager(DockerClient dockerClient, JTable cTable) {
         super();
         log.info("Initializing State Manager");
         this.cTable = cTable;
+        this.cTableModel = (ContainersTableModel) cTable.getModel();
         this.dockerClient = dockerClient;
         initState();
     }
@@ -49,14 +35,9 @@ public class StateManager extends SwingWorker<Integer, Integer> {
         List<Container> containerList = dockerClient.listContainersCmd()
             .withShowAll(true)
             .exec();
-        state = new LinkedHashMap<>();
         for (var c : containerList) {
-            state.put(c.getId(), c);
-
-            // Also fill the table model with initial values
-            ((DefaultTableModel) cTable.getModel()).addRow(new Object[]{c.getId(), c.getImage(), c.getState()});
+            cTableModel.addContainer(c);
         }
-        log.debug("Current state: {}", state);
     }
 
     private Container getContainerInfo(String containerId) {
@@ -68,7 +49,9 @@ public class StateManager extends SwingWorker<Integer, Integer> {
     }
 
     public Boolean isRunning(String containerId) {
-        return state.get(containerId).getState().equals(ContainerState.RUNNING.value);
+        return cTableModel.getContainerById(containerId)
+            .getState()
+            .equals(ContainerState.RUNNING.value());
     }
 
     /*
@@ -76,7 +59,7 @@ public class StateManager extends SwingWorker<Integer, Integer> {
     */
 
     @Override
-    protected Integer doInBackground() throws Exception {
+    protected Object doInBackground() {
         try {
             dockerClient.eventsCmd()
                 .withEventTypeFilter(EventType.CONTAINER)
@@ -84,49 +67,33 @@ public class StateManager extends SwingWorker<Integer, Integer> {
                     @Override
                     public void onNext(Event evt) {
                         String containerId = evt.getId();
-                        String[] imgSplit = evt.getFrom().split("/");
-                        String containerImg = imgSplit[imgSplit.length - 1];
-                        String status = evt.getStatus();
-
-                        switch (status) {
-                            case "create":
-                                log.info("Container '{}' created", containerImg);
-                                state.put(containerId, getContainerInfo(containerId));
-                                break;
-                            case "start":
-                                log.info("Container '{}' started", containerImg);
-                                state.put(containerId, getContainerInfo(containerId));
-                                break;
-                            case "die":
-                                log.info("Container '{}' stopped", containerImg);
-                                state.put(containerId, getContainerInfo(containerId));
-                                break;
-                            case "remove":
-                                log.info("Container '{}' removed", containerImg);
-                                state.remove(containerId);
+                        StatusUpdateType updateType = StatusUpdateType.getUpdateTypeFromString(evt.getStatus());
+                        if (updateType != null) {
+                            switch (updateType) {
+                                // TODO: make unified
+                                case Removed -> publish(new StatusUpdate(updateType, containerId));
+                                default ->
+                                    publish(new StatusUpdate(updateType, getContainerInfo(containerId)));
+                            }
                         }
-                        // This is a dummy publish, since we actually rebuild the table every time
-                        // using shared state
-                        publish(1);
                     }
                 }).awaitCompletion();
         } catch (InterruptedException intExc) {
             log.warn("State Manager was interrupted, shutting down");
         }
-        return 0;
+        return null;
     }
 
     @Override
-    protected void process(List<Integer> chunks) {
+    protected void process(List<StatusUpdate> chunks) {
         log.info("Updating table model");
-        TableModel tModel = cTable.getModel();
-        ((DefaultTableModel) tModel).setRowCount(0);
-        // We need this lock here, because SwingWorker modifies `state` in the background thread,
-        // which causes iterator to throw exceptions
-        stateLock.lock();
-        for (Map.Entry<String, Container> e : state.entrySet()) {
-            ((DefaultTableModel) tModel).addRow(new String[]{e.getKey(), e.getValue().getImage(), e.getValue().getState()});
+        for (StatusUpdate s : chunks) {
+            StatusUpdateType updateType = s.getUpdateType();
+            switch (updateType) {
+                case Created -> cTableModel.addContainer(s.getContainer());
+                case Started, Stopped -> cTableModel.updateContainer(s.getContainer());
+                case Removed -> cTableModel.removeContainerById(s.getContainerId());
+            }
         }
-        stateLock.unlock();
     }
 }
