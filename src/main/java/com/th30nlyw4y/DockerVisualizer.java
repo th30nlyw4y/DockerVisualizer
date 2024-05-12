@@ -32,8 +32,8 @@ public class DockerVisualizer extends JFrame {
         buttonsPanel = new ControlButtonsPanel();
 
         // Set up action listeners
-        initControlButtonListeners();
-        initTableListeners();
+        initControlButtonPanelListeners();
+        initContainersPanelListeners();
 
         // Put everything together
         add(containersPanel, BorderLayout.CENTER);
@@ -50,7 +50,7 @@ public class DockerVisualizer extends JFrame {
         setLayout(new BorderLayout());
     }
 
-    private void initControlButtonListeners() {
+    private void initControlButtonPanelListeners() {
         buttonsPanel.getButton(ControlButtonType.START)
             .addActionListener(e -> startButtonHandler());
         buttonsPanel.getButton(ControlButtonType.STOP)
@@ -59,8 +59,13 @@ public class DockerVisualizer extends JFrame {
             .addActionListener(e -> logsButtonHandler());
     }
 
-    private void initTableListeners() {
-        containersPanel.addSelectionListener(e -> tableSelectionChanged());
+    private void initContainersPanelListeners() {
+        // For now only used to update buttons state according to selected container's state change
+        containersPanel.addTableModelListener(e -> {
+            if (containersPanel.isAffectedByUpdate(e.getFirstRow(), e.getLastRow()))
+                refreshControlButtons();
+        });
+        containersPanel.addSelectionListener(e -> refreshControlButtons());
     }
 
     private void startButtonHandler() {
@@ -83,7 +88,7 @@ public class DockerVisualizer extends JFrame {
         logPanel.startLogStreamingAndShow(containerId);
     }
 
-    private void tableSelectionChanged() {
+    private void refreshControlButtons() {
         DockerVisualizer.log.debug("Handling Table selection change event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
         if (selectedContainerId == null) {

@@ -24,13 +24,15 @@ public class ContainersTableModel extends AbstractTableModel {
     }
 
     public void removeContainerById(String containerId) {
-        int containerIdx = indexes.get(containerId);
-        state.set(containerIdx, state.getLast());
-        indexes.remove(containerId);
+        int removedContainerIdx = indexes.get(containerId);
+        String lastId = state.getLast().getId();
+        state.set(removedContainerIdx, state.getLast());
+        indexes.put(lastId, removedContainerIdx);
         state.removeLast();
+        indexes.remove(containerId);
 
         // Notify about changes
-        fireTableRowsUpdated(containerIdx, containerIdx);
+        fireTableRowsUpdated(removedContainerIdx, removedContainerIdx);
         fireTableRowsDeleted(state.size(), state.size());
     }
 
@@ -48,6 +50,10 @@ public class ContainersTableModel extends AbstractTableModel {
 
     public Container getContainerById(String containerId) {
         return state.get(indexes.get(containerId));
+    }
+
+    public int getRowByContainerId(String containerId) {
+        return indexes.get(containerId);
     }
 
     @Override

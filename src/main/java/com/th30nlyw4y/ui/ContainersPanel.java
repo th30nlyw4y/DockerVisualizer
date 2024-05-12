@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 public class ContainersPanel extends JScrollPane {
@@ -40,6 +41,10 @@ public class ContainersPanel extends JScrollPane {
         stateManager.execute();
     }
 
+    public void addTableModelListener(TableModelListener l) {
+        cTableModel.addTableModelListener(l);
+    }
+
     public void addSelectionListener(ListSelectionListener l) {
         cTable.getSelectionModel().addListSelectionListener(l);
     }
@@ -55,5 +60,12 @@ public class ContainersPanel extends JScrollPane {
         return ((ContainersTableModel) cTableModel).getContainerById(containerId)
             .getState()
             .equals(ContainerState.RUNNING.value());
+    }
+
+    public Boolean isAffectedByUpdate(int startRow, int endRow) {
+        int selectedContainerRow = ((ContainersTableModel) cTableModel).getRowByContainerId(
+            getSelectedContainerId()
+        );
+        return selectedContainerRow >= startRow && selectedContainerRow <= endRow;
     }
 }
