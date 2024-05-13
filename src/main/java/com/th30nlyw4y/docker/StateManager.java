@@ -8,7 +8,6 @@ import com.github.dockerjava.api.model.EventType;
 import com.th30nlyw4y.model.StatusUpdate;
 import com.th30nlyw4y.model.StatusUpdateType;
 import com.th30nlyw4y.ui.ContainersTableModel;
-import com.th30nlyw4y.model.ContainerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +17,19 @@ import java.util.*;
 public class StateManager extends SwingWorker<Object, StatusUpdate> {
     private DockerClient dockerClient;
     private ContainersTableModel cTableModel;
+    private final StateManagerCallback stateManagerCallback;
     private final Logger log = LoggerFactory.getLogger(StateManager.class);
 
     public StateManager(ContainersTableModel cTableModel) {
-        this(new DockerConnection().getClient(), cTableModel);
+        this(null, cTableModel);
     }
 
     public StateManager(DockerClient dockerClient, ContainersTableModel cTableModel) {
         super();
         log.info("Initializing State Manager");
         this.cTableModel = cTableModel;
-        this.dockerClient = dockerClient;
+        this.dockerClient = dockerClient != null ? dockerClient : new DockerConnection().getClient();
+        stateManagerCallback = new StateManagerCallback();
         initState();
     }
 
@@ -59,21 +60,8 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
         try {
             dockerClient.eventsCmd()
                 .withEventTypeFilter(EventType.CONTAINER)
-                .exec(new ResultCallback.Adapter<Event>() {
-                    @Override
-                    public void onNext(Event evt) {
-                        String containerId = evt.getId();
-                        StatusUpdateType updateType = StatusUpdateType.getUpdateTypeFromString(evt.getStatus());
-                        if (updateType != null) {
-                            switch (updateType) {
-                                // TODO: make unified
-                                case Removed -> publish(new StatusUpdate(updateType, containerId));
-                                default ->
-                                    publish(new StatusUpdate(updateType, getContainerInfo(containerId)));
-                            }
-                        }
-                    }
-                }).awaitCompletion();
+                .exec(stateManagerCallback)
+                .awaitCompletion();
         } catch (InterruptedException intExc) {
             log.warn("State Manager was interrupted, shutting down");
         }
@@ -89,6 +77,22 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
                 case Created -> cTableModel.addContainer(s.getContainer());
                 case Started, Stopped -> cTableModel.updateContainer(s.getContainer());
                 case Removed -> cTableModel.removeContainerById(s.getContainerId());
+            }
+        }
+    }
+
+    private class StateManagerCallback extends ResultCallback.Adapter<Event> {
+        @Override
+        public void onNext(Event evt) {
+            String containerId = evt.getId();
+            StatusUpdateType updateType = StatusUpdateType.getUpdateTypeFromString(evt.getStatus());
+            if (updateType != null) {
+                // TODO: make unified
+                if (updateType == StatusUpdateType.Removed) {
+                    publish(new StatusUpdate(updateType, containerId));
+                } else {
+                    publish(new StatusUpdate(updateType, getContainerInfo(containerId)));
+                }
             }
         }
     }

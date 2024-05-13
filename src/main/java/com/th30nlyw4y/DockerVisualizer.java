@@ -2,8 +2,11 @@ package com.th30nlyw4y;
 
 import com.github.dockerjava.api.DockerClient;
 import com.th30nlyw4y.docker.DockerConnection;
+import com.th30nlyw4y.docker.LogStreamer;
+import com.th30nlyw4y.docker.StateManager;
 import com.th30nlyw4y.model.ControlButtonType;
 import com.th30nlyw4y.ui.ContainersPanel;
+import com.th30nlyw4y.ui.ContainersTableModel;
 import com.th30nlyw4y.ui.ControlButtonsPanel;
 import com.th30nlyw4y.ui.LogPanel;
 import org.slf4j.Logger;
@@ -12,33 +15,42 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 
-public class DockerVisualizer extends JFrame {
-    private DockerClient dockerClient;
-    private ContainersPanel containersPanel;
-    private LogPanel logPanel;
-    private ControlButtonsPanel buttonsPanel;
-    static final Logger log = LoggerFactory.getLogger(DockerVisualizer.class);
+public final class DockerVisualizer extends JFrame {
+    private LogStreamer logStreamer;
+    private final DockerClient dockerClient;
+    private final StateManager stateManager;
+    private final ContainersPanel containersPanel;
+    private final LogPanel logPanel;
+    private final ControlButtonsPanel controlButtonsPanel;
+    private final Logger log = LoggerFactory.getLogger(DockerVisualizer.class);
 
     public DockerVisualizer() {
+        this(null);
+    }
+
+    public DockerVisualizer(DockerClient dockerClient) {
         super();
         initFrame();
-
-        // Init Docker client
-        dockerClient = new DockerConnection().getClient();
 
         // Prepare UI components
         containersPanel = new ContainersPanel();
         logPanel = new LogPanel();
-        buttonsPanel = new ControlButtonsPanel();
+        controlButtonsPanel = new ControlButtonsPanel();
+
+        // Init `backend` services
+        this.dockerClient = dockerClient != null ? dockerClient : new DockerConnection().getClient();
+        stateManager = new StateManager(
+            dockerClient, (ContainersTableModel) containersPanel.getTableModel()
+        );
 
         // Set up action listeners
-        initControlButtonPanelListeners();
+        initButtonListeners();
         initContainersPanelListeners();
 
-        // Put everything together
+        // Put UI elements together
         add(containersPanel, BorderLayout.CENTER);
         add(logPanel, BorderLayout.EAST);
-        add(buttonsPanel, BorderLayout.SOUTH);
+        add(controlButtonsPanel, BorderLayout.SOUTH);
     }
 
     private void initFrame() {
@@ -50,13 +62,13 @@ public class DockerVisualizer extends JFrame {
         setLayout(new BorderLayout());
     }
 
-    private void initControlButtonPanelListeners() {
-        buttonsPanel.getButton(ControlButtonType.START)
-            .addActionListener(e -> startButtonHandler());
-        buttonsPanel.getButton(ControlButtonType.STOP)
-            .addActionListener(e -> stopButtonHandler());
-        buttonsPanel.getButton(ControlButtonType.LOGS)
-            .addActionListener(e -> logsButtonHandler());
+    private void initButtonListeners() {
+        // Control buttons
+        controlButtonsPanel.addButtonListener(ControlButtonType.START, e -> startButtonHandler());
+        controlButtonsPanel.addButtonListener(ControlButtonType.STOP, e -> stopButtonHandler());
+        controlButtonsPanel.addButtonListener(ControlButtonType.LOGS, e -> logsButtonHandler());
+        // Log panel close button
+        logPanel.addCloseButtonListener(e -> closeLogPanelButtonHandler());
     }
 
     private void initContainersPanelListeners() {
@@ -69,43 +81,56 @@ public class DockerVisualizer extends JFrame {
     }
 
     private void startButtonHandler() {
-        DockerVisualizer.log.debug("Handling Start button event");
+        log.debug("Handling Start button event");
         String containerId = containersPanel.getSelectedContainerId();
         dockerClient.startContainerCmd(containerId).exec();
     }
 
     private void stopButtonHandler() {
-        DockerVisualizer.log.debug("Handling Stop button event");
+        log.debug("Handling Stop button event");
         String containerId = containersPanel.getSelectedContainerId();
         // Close log streaming, if we're going to stop container
-        logPanel.stopIfCurrentlyStreamed(containerId);
+        if (logStreamer != null && logStreamer.isCurrentlyStreamed(containerId)) {
+            logStreamer.stopStreaming();
+            logPanel.setInvisible();
+        }
         dockerClient.stopContainerCmd(containerId).exec();
     }
 
     private void logsButtonHandler() {
-        DockerVisualizer.log.debug("Handling Logs button event");
+        log.debug("Handling Logs button event");
         String containerId = containersPanel.getSelectedContainerId();
-        logPanel.startLogStreamingAndShow(containerId);
+        if (logStreamer != null) logStreamer.stopStreaming(); // Stop previous streaming
+        logStreamer = new LogStreamer(logPanel.getLogArea(), containerId);
+        logStreamer.startStreaming();
+        logPanel.setVisible();
+    }
+
+    private void closeLogPanelButtonHandler() {
+        log.debug("Handling Close log panel button event");
+        logStreamer.stopStreaming();
+        logPanel.setInvisible();
     }
 
     private void refreshControlButtons() {
-        DockerVisualizer.log.debug("Handling Table selection change event");
+        log.debug("Handling Table selection change event");
         String selectedContainerId = containersPanel.getSelectedContainerId();
         if (selectedContainerId == null) {
-            buttonsPanel.setDisabled(ControlButtonType.START, ControlButtonType.STOP, ControlButtonType.LOGS);
+            controlButtonsPanel.setDisabled(ControlButtonType.START, ControlButtonType.STOP, ControlButtonType.LOGS);
         } else {
             if (containersPanel.isRunning(selectedContainerId)) {
-                buttonsPanel.setEnabled(ControlButtonType.STOP, ControlButtonType.LOGS);
-                buttonsPanel.setDisabled(ControlButtonType.START);
+                controlButtonsPanel.setEnabled(ControlButtonType.STOP, ControlButtonType.LOGS);
+                controlButtonsPanel.setDisabled(ControlButtonType.START);
             } else {
-                buttonsPanel.setEnabled(ControlButtonType.START);
-                buttonsPanel.setDisabled(ControlButtonType.STOP, ControlButtonType.LOGS);
+                controlButtonsPanel.setEnabled(ControlButtonType.START);
+                controlButtonsPanel.setDisabled(ControlButtonType.STOP, ControlButtonType.LOGS);
             }
         }
     }
 
     public void start() {
         setVisible(true);
+        stateManager.execute();
     }
 
     public static void main(String[] args) {

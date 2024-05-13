@@ -1,7 +1,5 @@
 package com.th30nlyw4y.ui;
 
-import com.github.dockerjava.api.DockerClient;
-import com.th30nlyw4y.docker.StateManager;
 import com.th30nlyw4y.model.ContainerProperty;
 import com.th30nlyw4y.model.ContainerState;
 import org.apache.commons.lang3.ArrayUtils;
@@ -14,31 +12,23 @@ import javax.swing.table.TableModel;
 public class ContainersPanel extends JScrollPane {
     private JTable cTable;
     private TableModel cTableModel;
-    private StateManager stateManager;
     private final ContainerProperty[] requiredColumns = {ContainerProperty.Id};
 
     public ContainersPanel() {
-        this(null, new ContainerProperty[]{ContainerProperty.Image, ContainerProperty.State});
+        this(ContainerProperty.Image, ContainerProperty.State);
     }
 
-    public ContainersPanel(DockerClient dockerClient, ContainerProperty[] optionalColumns) {
+    public ContainersPanel(ContainerProperty... optionalColumns) {
         super();
-        initTable(optionalColumns);
+        initContainersTable(optionalColumns);
         setViewportView(cTable);
-        initAndRunBackgroundUpdate(dockerClient);
     }
 
-    private void initTable(ContainerProperty[] optionalColumns) {
+    private void initContainersTable(ContainerProperty[] optionalColumns) {
         ContainerProperty[] columns = ArrayUtils.addAll(requiredColumns, optionalColumns);
         cTableModel = new ContainersTableModel(columns);
         cTable = new JTable(cTableModel);
         cTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
-
-    private void initAndRunBackgroundUpdate(DockerClient dockerClient) {
-        stateManager = dockerClient != null ? new StateManager(dockerClient, (ContainersTableModel) cTableModel) :
-            new StateManager((ContainersTableModel) cTableModel);
-        stateManager.execute();
     }
 
     public void addTableModelListener(TableModelListener l) {
@@ -67,5 +57,9 @@ public class ContainersPanel extends JScrollPane {
             getSelectedContainerId()
         );
         return selectedContainerRow >= startRow && selectedContainerRow <= endRow;
+    }
+
+    public TableModel getTableModel() {
+        return cTableModel;
     }
 }

@@ -1,8 +1,10 @@
 package com.th30nlyw4y.ui;
+
 import com.th30nlyw4y.model.ControlButtonType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class ControlButtonsPanel extends JPanel {
     private JButton startButton;
@@ -31,6 +33,10 @@ public class ControlButtonsPanel extends JPanel {
             case STOP -> stopButton;
             case LOGS -> logsButton;
         };
+    }
+
+    public void addButtonListener(ControlButtonType t, ActionListener l) {
+        getButton(t).addActionListener(l);
     }
 
     public void setDisabled(ControlButtonType... buttons) {

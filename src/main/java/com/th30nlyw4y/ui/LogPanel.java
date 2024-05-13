@@ -1,16 +1,14 @@
 package com.th30nlyw4y.ui;
 
-import com.th30nlyw4y.docker.LogStreamer;
-
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class LogPanel extends JPanel {
     private JPanel closeButtonPanel;
     private JButton closeButton;
     private JScrollPane logAreaPanel;
     private JTextArea logArea;
-    private LogStreamer logStreamer;
 
     public LogPanel() {
         super(new BorderLayout());
@@ -18,7 +16,6 @@ public class LogPanel extends JPanel {
         // Create panel with close button
         closeButtonPanel = new JPanel(new BorderLayout());
         closeButton = new JButton("Close");
-        closeButton.addActionListener(e -> endLogStreamingAndHide());
         closeButtonPanel.add(closeButton, BorderLayout.EAST);
 
         // Create panel with log area
@@ -35,24 +32,26 @@ public class LogPanel extends JPanel {
         setVisible(false);
     }
 
-    public void endLogStreamingAndHide() {
-        logStreamer.close();
+    private void clear() {
+        logArea.setText(null);
+    }
+
+    public void addCloseButtonListener(ActionListener l) {
+        closeButton.addActionListener(l);
+    }
+
+    public JTextArea getLogArea() {
+        return logArea;
+    }
+
+    public void setInvisible() {
         setVisible(false);
         invalidate();
     }
 
-    public void startLogStreamingAndShow(String containerId) {
-        if (logStreamer != null)
-            logStreamer.close(); // Close current log streamer and start a new one
-        logStreamer = new LogStreamer(logArea, containerId);
-        logArea.setText(null);
-        logStreamer.execute();
-        if (!isVisible()) setVisible(true);
+    public void setVisible() {
+        clear();
+        setVisible(true);
         invalidate();
-    }
-
-    public void stopIfCurrentlyStreamed(String containerId) {
-        if (logStreamer != null && !logStreamer.isCurrentlyStreamed(containerId)) return;
-        endLogStreamingAndHide();
     }
 }
