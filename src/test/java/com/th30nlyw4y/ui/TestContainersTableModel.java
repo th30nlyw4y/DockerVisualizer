@@ -115,7 +115,7 @@ public class TestContainersTableModel {
 
     @Test
     void testRemoveContainerByIdNotExists() {
-        assertDoesNotThrow(() -> tableModel.removeContainer(getRandomContainer()));
+        assertDoesNotThrow(() -> tableModel.removeContainer(getRandomContainer().getId()));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class TestContainersTableModel {
         Container container = getRandomContainer();
         tableModel.addContainer(container);
         assertEquals(1, tableModel.getRowCount());
-        assertDoesNotThrow(() -> tableModel.removeContainer(container));
+        assertDoesNotThrow(() -> tableModel.removeContainer(container.getId()));
         assertEquals(0, tableModel.getRowCount());
     }
 
@@ -134,7 +134,7 @@ public class TestContainersTableModel {
         }
         assertEquals(containers.size(), tableModel.getRowCount());
         for (int i = 0; i < containers.size(); i++) {
-            tableModel.removeContainer(containers.get(i));
+            tableModel.removeContainer(containers.get(i).getId());
             int expectedRowCount = containers.size() - i - 1;
             assertEquals(expectedRowCount, tableModel.getRowCount());
         }

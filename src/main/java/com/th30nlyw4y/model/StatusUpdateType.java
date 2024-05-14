@@ -4,7 +4,8 @@ public enum StatusUpdateType {
     Created("create"),
     Started("start"),
     Stopped("die"),
-    Removed("remove");
+    Removed("remove"),
+    Destroyed("destroy");
 
     private String dockerEventName;
 
