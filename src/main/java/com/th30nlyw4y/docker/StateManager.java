@@ -76,7 +76,7 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
             switch (updateType) {
                 case Created -> cTableModel.addContainer(s.getContainer());
                 case Started, Stopped -> cTableModel.updateContainer(s.getContainer());
-                case Removed -> cTableModel.removeContainerById(s.getContainerId());
+                case Removed -> cTableModel.removeContainer(s.getContainer());
             }
         }
     }
@@ -87,12 +87,7 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
             String containerId = evt.getId();
             StatusUpdateType updateType = StatusUpdateType.getUpdateTypeFromString(evt.getStatus());
             if (updateType != null) {
-                // TODO: make unified
-                if (updateType == StatusUpdateType.Removed) {
-                    publish(new StatusUpdate(updateType, containerId));
-                } else {
-                    publish(new StatusUpdate(updateType, getContainerInfo(containerId)));
-                }
+                publish(new StatusUpdate(updateType, getContainerInfo(containerId)));
             }
         }
     }

@@ -24,7 +24,8 @@ public class ContainersTableModel extends AbstractTableModel {
         state = new ArrayList<>(2000);
     }
 
-    public void removeContainerById(String containerId) {
+    public void removeContainer(Container c) {
+        String containerId = c.getId();
         if (indexes.containsKey(containerId)) {
             int removedContainerIdx = indexes.get(containerId);
             String lastId = state.getLast().getId();
