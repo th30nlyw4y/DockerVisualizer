@@ -53,10 +53,12 @@ public class ContainersPanel extends JScrollPane {
     }
 
     public Boolean isAffectedByUpdate(int startRow, int endRow) {
-        int selectedContainerRow = ((ContainersTableModel) cTableModel).getRowByContainerId(
-            getSelectedContainerId()
-        );
-        return selectedContainerRow >= startRow && selectedContainerRow <= endRow;
+        String containerId = getSelectedContainerId();
+        if (containerId != null) {
+            int selectedContainerRow = ((ContainersTableModel) cTableModel).getRowByContainerId(containerId);
+            return selectedContainerRow >= startRow && selectedContainerRow <= endRow;
+        }
+        return false;
     }
 
     public TableModel getTableModel() {
