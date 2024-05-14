@@ -1,0 +1,177 @@
+[
+  {
+    "Id": "072c784e533dd628970378076fdc62c2f84fb09611ab50f90e2a410761304473",
+    "Names": [
+      "/beautiful_mclean"
+    ],
+    "Image": "nginx",
+    "ImageID": "sha256:1d668e06f1e534ab338404ba891c37d618dd53c9073dcdd4ebde82aa7643f83f",
+    "Command": "/docker-entrypoint.sh nginx -g 'daemon off;'",
+    "Created": 1715697562,
+    "Ports": [],
+    "Labels": {
+      "desktop.docker.io/wsl-distro": "Ubuntu",
+      "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+    },
+    "State": "created",
+    "Status": "Created",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "",
+          "NetworkID": "",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0
+        }
+      }
+    },
+    "Mounts": []
+  },
+  {
+    "Id": "9d0961814ad057013b95a421519b671cac5b526a445edfa538396c97584ab1b3",
+    "Names": [
+      "/silly_grothendieck"
+    ],
+    "Image": "nginx",
+    "ImageID": "sha256:1d668e06f1e534ab338404ba891c37d618dd53c9073dcdd4ebde82aa7643f83f",
+    "Command": "/docker-entrypoint.sh nginx -g 'daemon off;'",
+    "Created": 1715680263,
+    "Ports": [],
+    "Labels": {
+      "desktop.docker.io/wsl-distro": "Ubuntu",
+      "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+    },
+    "State": "exited",
+    "Status": "Exited (0) 6 hours ago",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "",
+          "NetworkID": "f876877562d40829a8b5fe5b4fe9eb9b2080e25aeeab2e38c260d7cb3de86583",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0
+        }
+      }
+    },
+    "Mounts": []
+  },
+  {
+    "Id": "e122c39273b1caa096a687489ce33e07881c68421c93393214317e8ef9b90e18",
+    "Names": [
+      "/exciting_curie"
+    ],
+    "Image": "redis",
+    "ImageID": "sha256:9509c4dd19fbb2a8abe044ab2edba261139c141ef4ebba4dcb9e0d9295431288",
+    "Command": "docker-entrypoint.sh redis-server",
+    "Created": 1715680261,
+    "Ports": [
+      {
+        "PrivatePort": 6379,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {
+      "desktop.docker.io/wsl-distro": "Ubuntu"
+    },
+    "State": "running",
+    "Status": "Up 2 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "02:42:ac:11:00:03",
+          "NetworkID": "c379f9adf54779c8fba838d878703080f4159bf76942d0640d95ca3bfd9ccc71",
+          "EndpointID": "844fa5cca23c8e22b8ff7505454df03449d3fbd36f3e7b96a13736b3d37a96f6",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.3",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Name": "8f3919377fd3b638f35722c6bf3a1cd2f2d8b90fe4f22ce896bab317306f55c8",
+        "Source": "",
+        "Destination": "/data",
+        "Driver": "local",
+        "Mode": "",
+        "RW": true,
+        "Propagation": ""
+      }
+    ]
+  },
+  {
+    "Id": "ebb7bb47010917a5536ae6b5d72d50d2fe65e1d05b3f9b6d1983ec5e2365467a",
+    "Names": [
+      "/exciting_nightingale"
+    ],
+    "Image": "nginx",
+    "ImageID": "sha256:1d668e06f1e534ab338404ba891c37d618dd53c9073dcdd4ebde82aa7643f83f",
+    "Command": "/docker-entrypoint.sh nginx -g 'daemon off;'",
+    "Created": 1715680255,
+    "Ports": [
+      {
+        "PrivatePort": 80,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {
+      "desktop.docker.io/wsl-distro": "Ubuntu",
+      "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
+    },
+    "State": "running",
+    "Status": "Up 2 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "02:42:ac:11:00:02",
+          "NetworkID": "c379f9adf54779c8fba838d878703080f4159bf76942d0640d95ca3bfd9ccc71",
+          "EndpointID": "454a2c522171dd3b2d015a95eb636690286d4db8963f4650338656a9850e76b0",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0
+        }
+      }
+    },
+    "Mounts": []
+  }
+]

@@ -2,6 +2,7 @@ package com.th30nlyw4y.ui;
 
 import com.github.dockerjava.api.model.Container;
 import com.th30nlyw4y.model.ContainerProperty;
+import org.apache.hc.core5.annotation.Contract;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -24,36 +25,40 @@ public class ContainersTableModel extends AbstractTableModel {
     }
 
     public void removeContainerById(String containerId) {
-        int removedContainerIdx = indexes.get(containerId);
-        String lastId = state.getLast().getId();
-        state.set(removedContainerIdx, state.getLast());
-        indexes.put(lastId, removedContainerIdx);
-        state.removeLast();
-        indexes.remove(containerId);
+        if (indexes.containsKey(containerId)) {
+            int removedContainerIdx = indexes.get(containerId);
+            String lastId = state.getLast().getId();
+            state.set(removedContainerIdx, state.getLast());
+            indexes.put(lastId, removedContainerIdx);
+            state.removeLast();
+            indexes.remove(containerId);
 
-        // Notify about changes
-        fireTableRowsUpdated(removedContainerIdx, removedContainerIdx);
-        fireTableRowsDeleted(state.size(), state.size());
+            // Notify about changes
+            fireTableRowsUpdated(removedContainerIdx, removedContainerIdx);
+            fireTableRowsDeleted(state.size(), state.size());
+        }
     }
 
     public void addContainer(Container c) {
+        if (c == null) return;
         state.add(c);
         indexes.put(c.getId(), state.size() - 1);
         fireTableRowsInserted(state.size() - 1, state.size() - 1);
     }
 
     public void updateContainer(Container c) {
+        if (c == null || !indexes.containsKey(c.getId())) return;
         int containerIdx = indexes.get(c.getId());
         state.set(containerIdx, c);
         fireTableRowsUpdated(containerIdx, containerIdx);
     }
 
     public Container getContainerById(String containerId) {
-        return state.get(indexes.get(containerId));
+        return containerId != null && indexes.containsKey(containerId) ? state.get(indexes.get(containerId)) : null;
     }
 
     public int getRowByContainerId(String containerId) {
-        return indexes.get(containerId);
+        return containerId != null && indexes.containsKey(containerId) ? indexes.get(containerId) : -1;
     }
 
     @Override
