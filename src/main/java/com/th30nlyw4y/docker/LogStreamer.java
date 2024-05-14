@@ -15,6 +15,7 @@ public class LogStreamer extends SwingWorker<Object, String> {
     private final String containerId;
     private final ResultCallback.Adapter<Frame> logStreamCallback;
     private final Logger log = LoggerFactory.getLogger(LogStreamer.class);
+    private Boolean currentlyStreaming;
 
     public LogStreamer(JTextArea logArea, String containerId) {
         this(null, logArea, containerId);
@@ -25,11 +26,14 @@ public class LogStreamer extends SwingWorker<Object, String> {
         this.dockerClient = dockerClient != null ? dockerClient : new DockerConnection().getClient();
         this.logArea = logArea;
         this.containerId = containerId;
+        currentlyStreaming = false;
         logStreamCallback = new LogStreamCallback();
     }
 
     public Boolean isCurrentlyStreamed(String containerId) {
-        return this.containerId.equals(containerId);
+        // It is possible, that new LogStreamer was created, but log streaming
+        // hasn't started yet, so we need to check if we're streaming right now
+        return currentlyStreaming && this.containerId.equals(containerId);
     }
 
     public void startStreaming() {
@@ -43,6 +47,7 @@ public class LogStreamer extends SwingWorker<Object, String> {
     @Override
     protected Object doInBackground() {
         log.info("Starting log streaming for container {}", containerId);
+        currentlyStreaming = true;
         try {
             dockerClient.logContainerCmd(containerId)
                 .withStdOut(true)
