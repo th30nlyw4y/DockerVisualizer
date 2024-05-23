@@ -42,7 +42,7 @@ public class ContainersPanel extends JScrollPane {
     public String getSelectedContainerId() {
         int col = cTable.getColumn(ContainerProperty.Id.name()).getModelIndex();
         int row = cTable.getSelectedRow();
-        if (row == -1) return null;
+        if (row < 0 || row >= cTableModel.getRowCount()) return null;
         return (String) cTableModel.getValueAt(row, col);
     }
 
