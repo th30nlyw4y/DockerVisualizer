@@ -31,23 +31,16 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
         this.cTableModel = cTableModel;
         this.dockerClient = dockerClient != null ? dockerClient : new DockerConnection().getClient();
         stateManagerCallback = new StateManagerCallback();
-        Thread initStateThread = new Thread(this::initState, "InitState");
-        initStateThread.start();
     }
 
-    private void initState() {
-        try {
-            log.info("Initializing state");
-            List<Container> containerList = dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec();
-            log.info("Found {} containers", containerList.size());
-            for (Container c : containerList) {
-                SwingUtilities.invokeAndWait(() -> cTableModel.addContainer(c));
-            }
-        } catch (InterruptedException | InvocationTargetException e) {
-            log.error("State initialization failed: {}", e.getMessage());
-            System.exit(1);
+    public void initState() {
+        log.info("Initializing state");
+        List<Container> containerList = dockerClient.listContainersCmd()
+            .withShowAll(true)
+            .exec();
+        log.info("Found {} containers", containerList.size());
+        for (Container c : containerList) {
+            SwingUtilities.invokeLater(() -> cTableModel.addContainer(c));
         }
     }
 

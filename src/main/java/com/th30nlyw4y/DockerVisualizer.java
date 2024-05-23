@@ -130,6 +130,7 @@ public final class DockerVisualizer extends JFrame {
 
     public void start() {
         setVisible(true);
+        new Thread(stateManager::initState, "InitStateThread").start();
         stateManager.execute();
     }
 
