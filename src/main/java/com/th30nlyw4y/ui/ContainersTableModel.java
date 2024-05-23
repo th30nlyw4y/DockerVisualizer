@@ -2,7 +2,6 @@ package com.th30nlyw4y.ui;
 
 import com.github.dockerjava.api.model.Container;
 import com.th30nlyw4y.model.ContainerProperty;
-import org.apache.hc.core5.annotation.Contract;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;

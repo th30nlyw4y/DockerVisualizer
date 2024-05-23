@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class StateManager extends SwingWorker<Object, StatusUpdate> {
@@ -30,16 +31,23 @@ public class StateManager extends SwingWorker<Object, StatusUpdate> {
         this.cTableModel = cTableModel;
         this.dockerClient = dockerClient != null ? dockerClient : new DockerConnection().getClient();
         stateManagerCallback = new StateManagerCallback();
-        initState();
+        Thread initStateThread = new Thread(this::initState, "InitState");
+        initStateThread.start();
     }
 
     private void initState() {
-        log.info("Initializing state");
-        List<Container> containerList = dockerClient.listContainersCmd()
-            .withShowAll(true)
-            .exec();
-        for (var c : containerList) {
-            cTableModel.addContainer(c);
+        try {
+            log.info("Initializing state");
+            List<Container> containerList = dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec();
+            log.info("Found {} containers", containerList.size());
+            for (Container c : containerList) {
+                SwingUtilities.invokeAndWait(() -> cTableModel.addContainer(c));
+            }
+        } catch (InterruptedException | InvocationTargetException e) {
+            log.error("State initialization failed: {}", e.getMessage());
+            System.exit(1);
         }
     }
 
